@@ -36,9 +36,17 @@ enum RolUsuario: string
         ], true);
     }
 
-    /** Roles con visibilidad de TODOS los presupuestos (no solo el de su organización). */
     public function veTodosLosPresupuestos(): bool
     {
         return $this !== self::Presidencia;
+    }
+
+    public function puedeCancelarActividadAjena(): bool
+    {
+        return $this->esConsejoObispado() || in_array($this, [
+            self::SecretarioBarrio,
+            self::SecretarioEjecutivo,
+            self::SecretarioFinanzas,
+        ], true);
     }
 }

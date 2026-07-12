@@ -38,6 +38,7 @@ class UserController extends Controller
         $datos['password'] = Hash::make($datos['password']);
         $datos['activo'] = $datos['activo'] ?? true;
 
+        // organizacion_id solo tiene sentido si el rol es Presidencia (Fase 2)
         $rol = Role::find($datos['role_id']);
         if ($rol->nombre !== 'Presidencia') {
             $datos['organizacion_id'] = null;
@@ -79,9 +80,18 @@ class UserController extends Controller
         return redirect()->route('usuarios.index')->with('exito', 'Usuario actualizado.');
     }
 
+    /** Nunca se elimina — solo se desactiva. */
     public function toggleActivo(User $usuario): RedirectResponse
     {
         $this->authorize('update', $usuario);
+
+        if ($usuario->id === auth()->id()) {
+            return back()->with('error', 'No puedes activar o desactivar tu propia cuenta.');
+        }
+
+        if ($usuario->role->nombre === 'Administrador') {
+            return back()->with('error', 'La cuenta de Administrador no se puede desactivar.');
+        }
 
         $usuario->update(['activo' => !$usuario->activo]);
 

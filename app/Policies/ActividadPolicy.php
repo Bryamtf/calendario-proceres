@@ -74,4 +74,18 @@ class ActividadPolicy
         return $user->rolEnum() === RolUsuario::Presidencia
             && $user->organizacion_id === $actividad->organizacion_id;
     }
+
+    /**
+     * Cancelar una actividad ya Aprobada (causa mayor): la Presidencia dueña tiene
+     * flexibilidad para cancelar la suya; Consejo de Obispado y Secretarías pueden
+     * cancelar cualquiera (confirmado en Fase 9).
+     */
+    public function cancelar(User $user, Actividad $actividad): bool
+    {
+        if ($user->rolEnum() === RolUsuario::Presidencia) {
+            return $user->organizacion_id === $actividad->organizacion_id;
+        }
+
+        return $user->rolEnum()->puedeCancelarActividadAjena();
+    }
 }

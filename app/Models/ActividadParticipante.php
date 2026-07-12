@@ -11,6 +11,10 @@ class ActividadParticipante extends Model
 
     protected $fillable = ['actividad_id', 'tipo', 'nombre'];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
     public function actividad(): BelongsTo
     {
         return $this->belongsTo(Actividad::class);

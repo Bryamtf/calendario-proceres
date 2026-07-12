@@ -16,6 +16,7 @@ enum EstadoActividad: string
         return match ($this) {
             self::Pendiente => in_array($nuevo, [self::Aprobada, self::Rechazada, self::NoProcesada], true),
             self::Aprobada => in_array($nuevo, [self::Realizada, self::Cancelada], true),
+            self::Rechazada => $nuevo === self::Pendiente,
             default => false,
         };
     }

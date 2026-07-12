@@ -14,7 +14,7 @@ class ActividadRepository
         return Actividad::query()
             ->with(['organizacion', 'estadoActual'])
             ->where('trimestre_id', $trimestre->id)
-            ->whereHas('estadoActual', fn($q) => $q->whereIn('nombre', ['Pendiente', 'Aprobada']))
+            ->whereHas('estadoActual', fn ($q) => $q->whereIn('nombre', ['Pendiente', 'Aprobada']))
             ->orderBy('fecha')
             ->get();
     }
@@ -25,7 +25,7 @@ class ActividadRepository
         return Actividad::query()
             ->with(['organizacion', 'estadoActual'])
             ->where('trimestre_id', $trimestre->id)
-            ->whereHas('estadoActual', fn($q) => $q->where('nombre', 'Pendiente'))
+            ->whereHas('estadoActual', fn ($q) => $q->where('nombre', 'Pendiente'))
             ->orderBy('fecha')
             ->get();
     }
@@ -39,5 +39,28 @@ class ActividadRepository
             ->where('trimestre_id', $trimestre->id)
             ->orderBy('fecha')
             ->get();
+    }
+
+    /**
+     * Listado filtrable de Actividades (Fase 9 mejorado): por trimestre, organización y estado(s).
+     * @param array{trimestre_id?: ?int, organizacion_id?: ?int, estados?: array} $filtros
+     */
+    public function filtradas(array $filtros): Collection
+    {
+        $query = Actividad::query()->with(['organizacion', 'estadoActual']);
+
+        if (! empty($filtros['trimestre_id'])) {
+            $query->where('trimestre_id', $filtros['trimestre_id']);
+        }
+
+        if (! empty($filtros['organizacion_id'])) {
+            $query->where('organizacion_id', $filtros['organizacion_id']);
+        }
+
+        if (! empty($filtros['estados'])) {
+            $query->whereHas('estadoActual', fn ($q) => $q->whereIn('nombre', $filtros['estados']));
+        }
+
+        return $query->orderByDesc('fecha')->get();
     }
 }

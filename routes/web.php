@@ -1,12 +1,16 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ActividadController;
 use App\Http\Controllers\CalendarioController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\TrimestreController;
 use App\Http\Controllers\OrganizacionController;
+use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\PresupuestoController;
+use Illuminate\Support\Facades\Route;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -30,8 +34,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/actividades/{actividad}', [ActividadController::class, 'show'])->name('actividades.show');
     Route::post('/actividades/{actividad}/aprobar', [ActividadController::class, 'aprobar'])->name('actividades.aprobar');
     Route::post('/actividades/{actividad}/rechazar', [ActividadController::class, 'rechazar'])->name('actividades.rechazar');
+    Route::post('/actividades/{actividad}/cancelar', [ActividadController::class, 'cancelar'])->name('actividades.cancelar');
     Route::post('/actividades/{actividad}/migrar', [ActividadController::class, 'migrar'])->name('actividades.migrar');
     Route::post('/actividades/{actividad}/comentarios', [ActividadController::class, 'comentar'])->name('actividades.comentar');
+    Route::get('/actividades/{actividad}/resumen', [ActividadController::class, 'resumen'])->name('actividades.resumen');
+    Route::get('/actividades/{actividad}/editar', [ActividadController::class, 'edit'])->name('actividades.edit');
+    Route::put('/actividades/{actividad}', [ActividadController::class, 'update'])->name('actividades.update');
 
     Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
     Route::get('/usuarios/crear', [UserController::class, 'create'])->name('usuarios.create');
@@ -51,6 +59,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/organizaciones/{organizacion}/editar', [OrganizacionController::class, 'edit'])->name('organizaciones.edit');
     Route::put('/organizaciones/{organizacion}', [OrganizacionController::class, 'update'])->name('organizaciones.update');
     Route::patch('/organizaciones/{organizacion}/toggle-activo', [OrganizacionController::class, 'toggleActivo'])->name('organizaciones.toggleActivo');
+
+
+    Route::get('/reportes', [ReporteController::class, 'index'])->name('reportes.index');
+    Route::get('/reportes/excel', [ReporteController::class, 'excel'])->name('reportes.excel');
+    Route::get('/reportes/pdf', [ReporteController::class, 'pdf'])->name('reportes.pdf');
+
+    Route::get('/configuracion', [ConfiguracionController::class, 'edit'])->name('configuracion.edit');
+    Route::put('/configuracion', [ConfiguracionController::class, 'update'])->name('configuracion.update');
+    Route::post('/configuracion/catalogos/{tipo}', [ConfiguracionController::class, 'storeCatalogo'])->name('configuracion.catalogos.store');
+    Route::patch('/configuracion/catalogos/{tipo}/{id}/toggle', [ConfiguracionController::class, 'toggleCatalogoItem'])->name('configuracion.catalogos.toggle');
+
+    Route::get('/presupuesto', [PresupuestoController::class, 'index'])->name('presupuesto.index');
+    Route::put('/presupuesto/{organizacion}', [PresupuestoController::class, 'update'])->name('presupuesto.update');
+
 });
 
 require __DIR__.'/auth.php';

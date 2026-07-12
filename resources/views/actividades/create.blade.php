@@ -5,6 +5,11 @@
 @section('contenido')
 <div x-data="actividadForm()" x-init="init()" class="max-w-3xl mx-auto p-5 md:p-10">
 
+    <a href="{{ route('actividades.index') }}" class="inline-flex items-center gap-1.5 text-sm text-ink/50 hover:text-ink transition-colors mb-6">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver
+    </a>
+
     <div class="flex items-center gap-2 mb-8">
         <template x-for="(label, i) in pasos" :key="i">
             <div class="flex items-center gap-2 flex-1">
@@ -210,11 +215,19 @@
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 @foreach($recursos as $recurso)
                     <label class="flex items-center gap-2.5 p-3 border border-line rounded-lg cursor-pointer hover:bg-paper/60 transition-colors">
-                        <input type="checkbox" name="recursos[]" value="{{ $recurso->id }}" class="w-4 h-4 rounded accent-accent">
+                        <input type="checkbox" name="recursos[]" value="{{ $recurso->id }}" class="w-4 h-4 rounded accent-accent" @if($recurso->nombre === 'Otro') x-model="otroSeleccionado" @endif @checked(in_array($recurso->id, old('recursos', [])))>
                         <span class="text-sm">{{ $recurso->nombre }}</span>
                     </label>
                 @endforeach
             </div>
+
+            @php $recursoOtro = $recursos->firstWhere('nombre', 'Otro'); @endphp
+            @if($recursoOtro)
+                <div x-show="otroSeleccionado" x-cloak>
+                    <label class="form-label">Especifica "Otro"</label>
+                    <input type="text" name="recursos_detalle[{{ $recursoOtro->id }}]" class="form-input" placeholder="¿Qué recurso adicional necesitas?" value="{{ old('recursos_detalle.'.$recursoOtro->id) }}">
+                </div>
+            @endif
         </div>
 
         {{-- ===== PASO 5: Resumen ===== --}}
@@ -276,6 +289,7 @@
             solicitaPresupuesto: {{ old('solicita_presupuesto') ? 'true' : 'false' }},
             modoPresupuesto: 'aproximado',
             rubros: [{ monto: 0 }],
+            otroSeleccionado: @json($recursoOtro ? in_array($recursoOtro->id, old('recursos', [])) : false),
             gruposParticipacion: [
                 { tipo: 'miembro_nuevo', label: 'Miembros nuevos', campoConteo: 'miembros_nuevos', nombres: [], borrador: '', abierto: false },
                 { tipo: 'amigo_ensenanza', label: 'Amigos en enseñanza', campoConteo: 'amigos_ensenanza', nombres: [], borrador: '', abierto: false },
@@ -283,6 +297,7 @@
             ],
             recursosMap: @json($recursos->pluck('nombre', 'id')),
             organizacionesMap: @json($organizaciones ? $organizaciones->pluck('nombre', 'id') : []),
+            organizacionUsuario: @json(auth()->user()->organizacion?->nombre),
             resumen: {},
             init() {},
             agregarParticipante(grupo) {
@@ -305,7 +320,7 @@
                 const val = (name) => fd.get(name) || '';
 
                 const orgId = val('organizacion_id');
-                const org = orgId ? (this.organizacionesMap[orgId] || null) : null;
+                const org = orgId ? (this.organizacionesMap[orgId] || null) : this.organizacionUsuario;
 
                 let presupuesto = 'No solicita';
                 if (this.solicitaPresupuesto) {

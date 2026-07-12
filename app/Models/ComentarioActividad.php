@@ -13,6 +13,10 @@ class ComentarioActividad extends Model
 
     protected $fillable = ['actividad_id', 'usuario_id', 'comentario'];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
     public function actividad(): BelongsTo
     {
         return $this->belongsTo(Actividad::class);

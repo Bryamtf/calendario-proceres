@@ -109,6 +109,134 @@ class ActividadService
         return $this->transicionar($actividad, EstadoActividad::Cancelada, $usuario, $motivo);
     }
 
+    /** Se llama desde el Listener de TrimestreCerrado, una vez por cada actividad Pendiente. */
+    public function marcarNoProcesada(Actividad $actividad, User $usuario): Actividad
+    {
+        return $this->transicionar($actividad, EstadoActividad::NoProcesada, $usuario, 'Trimestre cerrado sin resolver.');
+    }
+
+    /**
+     * Edita una actividad existente. Cambios menores (lugar, hora, descripción,
+     * recursos) se guardan directo. Cambios mayores (fecha, presupuesto, organización)
+     * regresan la actividad a Pendiente SI estaba Aprobada (Fase 3, 2.8).
+     */
+    public function actualizar(Actividad $actividad, array $datos, User $usuario): Actividad
+    {
+        $estadoActual = $actividad->estadoActualEnum();
+
+        // Rechazada es la única excepción a "terminal": el punto de rechazar es que
+        // la Presidencia corrija y reenvíe, así que sí se puede editar.
+        if ($estadoActual->esTerminal() && $estadoActual !== EstadoActividad::Rechazada) {
+            throw ValidationException::withMessages([
+                'estado' => "Esta actividad ya no se puede editar ({$actividad->estadoActual->nombre}).",
+            ]);
+        }
+
+        return DB::transaction(function () use ($actividad, $datos, $usuario, $estadoActual) {
+            $esCambioMayor = $this->esCambioMayor($actividad, $datos);
+            $estabaAprobada = $estadoActual === EstadoActividad::Aprobada;
+            $estabaRechazada = $estadoActual === EstadoActividad::Rechazada;
+
+            $actividad->update([
+                'organizacion_id' => $datos['organizacion_id'] ?? $actividad->organizacion_id,
+                'nombre' => $datos['nombre'],
+                'fecha' => $datos['fecha'],
+                'hora_inicio' => $datos['hora_inicio'],
+                'hora_fin' => $datos['hora_fin'],
+                'lugar' => $datos['lugar'],
+                'objetivo' => $datos['objetivo'],
+                'descripcion' => $datos['descripcion'] ?? null,
+                'asistencia_esperada' => $datos['asistencia_esperada'] ?? null,
+                'miembros_nuevos' => $datos['miembros_nuevos'] ?? null,
+                'amigos_ensenanza' => $datos['amigos_ensenanza'] ?? null,
+                'miembros_menos_activos' => $datos['miembros_menos_activos'] ?? null,
+                'solicita_presupuesto' => $datos['solicita_presupuesto'] ?? false,
+            ]);
+
+            // Reemplaza participantes, presupuesto y recursos (más simple y confiable que un diff manual)
+            $actividad->participantes()->delete();
+            foreach ($datos['participantes'] ?? [] as $participante) {
+                $actividad->participantes()->create([
+                    'tipo' => $participante['tipo'],
+                    'nombre' => $participante['nombre'],
+                    'created_at' => now(),
+                ]);
+            }
+
+            $actividad->presupuestoItems()->delete();
+            if ($actividad->solicita_presupuesto) {
+                foreach ($datos['presupuesto_items'] ?? [] as $item) {
+                    $actividad->presupuestoItems()->create([
+                        'categoria_presupuesto_id' => $item['categoria_presupuesto_id'] ?? null,
+                        'monto' => $item['monto'],
+                        'justificacion' => $item['justificacion'] ?? null,
+                    ]);
+                }
+            }
+
+            $actividad->recursos()->sync(
+                collect($datos['recursos'] ?? [])->mapWithKeys(fn($id) => [
+                    $id => ['detalle' => $datos['recursos_detalle'][$id] ?? null],
+                ])->all()
+            );
+
+            // Cambio mayor sobre una actividad ya Aprobada -> vuelve a Pendiente para nueva revisión.
+            if ($esCambioMayor && $estabaAprobada) {
+                $estadoPendiente = EstadoActividadModelo::where('nombre', EstadoActividad::Pendiente->value)->firstOrFail();
+
+                $actividad->update([
+                    'estado_actual_id' => $estadoPendiente->id,
+                    'aprobado_por' => null,
+                    'fecha_aprobacion' => null,
+                ]);
+
+                event(new ActividadEstadoCambiado(
+                    $actividad,
+                    EstadoActividad::Aprobada,
+                    EstadoActividad::Pendiente,
+                    $usuario,
+                    'Editada con cambio mayor (fecha/presupuesto/organización) — vuelve a revisión.'
+                ));
+            }
+
+            // Rechazada: cualquier edición se considera una corrección — reenvía siempre a Pendiente.
+            if ($estabaRechazada) {
+                $estadoPendiente = EstadoActividadModelo::where('nombre', EstadoActividad::Pendiente->value)->firstOrFail();
+
+                $actividad->update(['estado_actual_id' => $estadoPendiente->id]);
+
+                event(new ActividadEstadoCambiado(
+                    $actividad,
+                    EstadoActividad::Rechazada,
+                    EstadoActividad::Pendiente,
+                    $usuario,
+                    'Corregida y reenviada tras rechazo.'
+                ));
+            }
+
+            CalendarioService::invalidarCache($actividad->trimestre_id);
+
+            return $actividad->fresh();
+        });
+    }
+
+    /** Fecha, presupuesto total u organización distintos = cambio "mayor" (Fase 3, 2.8). */
+    private function esCambioMayor(Actividad $actividad, array $datos): bool
+    {
+        if ($datos['fecha'] !== $actividad->fecha->format('Y-m-d')) {
+            return true;
+        }
+
+        if (isset($datos['organizacion_id']) && (int) $datos['organizacion_id'] !== $actividad->organizacion_id) {
+            return true;
+        }
+
+        $montoNuevo = collect($datos['presupuesto_items'] ?? [])->sum('monto');
+        $montoActual = $actividad->montoTotalSolicitado();
+
+        return abs($montoNuevo - $montoActual) > 0.009;
+    }
+
     /**
      * Migra una actividad "No Procesada" hacia el trimestre activo: crea una
      * NUEVA fila (no reabre la original), vinculada vía actividad_origen_id (Fase 1/2).

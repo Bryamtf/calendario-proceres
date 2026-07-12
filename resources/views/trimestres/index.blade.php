@@ -5,9 +5,6 @@
 @section('contenido')
     <div class="max-w-3xl mx-auto p-5 md:p-8 space-y-5">
 
-        @if(session('exito'))
-            <div class="bg-sage/10 border border-sage/30 text-sage text-sm rounded-lg px-4 py-3">{{ session('exito') }}</div>
-        @endif
         @if($errors->any())
             <div class="bg-brick/5 border border-brick/20 text-brick text-sm rounded-lg px-4 py-3">{{ $errors->first() }}</div>
         @endif
