@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             EstadoActividadSeeder::class,
             CatalogosSeeder::class,
             OrganizacionSeeder::class,
+            TrimestreSeeder::class,
             ConfiguracionYAdminSeeder::class, // depende de RoleSeeder (necesita el rol Administrador)
         ]);
     }
