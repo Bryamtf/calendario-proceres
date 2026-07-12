@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class CategoriaPresupuesto extends Model
 {
+    protected $table = 'categorias_presupuesto';
+
     public $timestamps = false;
 
     protected $fillable = ['nombre', 'estado'];

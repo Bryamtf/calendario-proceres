@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PresupuestoOrganizacion extends Model
 {
+    protected $table = 'presupuestos_organizacion';
+
     protected $fillable = ['organizacion_id', 'trimestre_id', 'monto_asignado', 'creado_por'];
 
     protected $casts = [

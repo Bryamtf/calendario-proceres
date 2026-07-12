@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HistorialEstadoActividad extends Model
 {
+    protected $table = 'historial_estados_actividad';
+
     public $timestamps = false;
 
-    protected $fillable = ['actividad_id', 'estado_anterior_id', 'estado_nuevo_id', 'usuario_id', 'comentario'];
+    protected $fillable = ['actividad_id', 'estado_anterior_id', 'estado_nuevo_id', 'usuario_id', 'comentario', 'fecha_cambio'];
 
     protected $casts = [
         'fecha_cambio' => 'datetime',

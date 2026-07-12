@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FechaEspecial extends Model
 {
+    protected $table = 'fechas_especiales';
+
     public $timestamps = false;
 
     protected $fillable = ['tipo_fecha_especial_id', 'nombre', 'fecha_inicio', 'fecha_fin', 'descripcion', 'creado_por'];

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TipoFechaEspecial extends Model
 {
+    protected $table = 'tipos_fecha_especial';
+
     public $timestamps = false;
 
     protected $fillable = ['nombre', 'color'];

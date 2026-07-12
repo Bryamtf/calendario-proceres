@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Actividad extends Model
 {
+    protected $table = 'actividades';
+
     protected $fillable = [
         'organizacion_id',
         'trimestre_id',

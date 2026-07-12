@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Organizacion extends Model
 {
+    protected $table = 'organizaciones';
+
     protected $fillable = ['nombre', 'color', 'estado'];
 
     public function usuarios(): HasMany
