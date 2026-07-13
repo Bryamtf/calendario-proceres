@@ -17,6 +17,7 @@ use App\Policies\TrimestrePolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -51,5 +52,8 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('gestionar-configuracion', function (User $user) {
             return $user->rolEnum() === RolUsuario::Administrador;
         });
+        if (config('app.env') === 'production') {
+            URL::forceScheme('https');
+        }
     }
 }
