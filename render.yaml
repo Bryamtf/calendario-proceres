@@ -1,6 +1,6 @@
 # Blueprint de Render — https://render.com/docs/blueprint-spec
 # Sube este archivo a la raíz del repo. En el dashboard de Render: New > Blueprint,
-# conecta tu repo, y Render arma los 2 servicios automáticamente.
+# conecta tu repo, y Render arma los servicios automáticamente.
 #
 # La base de datos vive en Aiven (externa a Render), así que sus credenciales
 # se cargan a mano como secretos en el dashboard, no las genera Render.
@@ -12,21 +12,22 @@ services:
     dockerfilePath: ./docker/render/Dockerfile
     dockerContext: .
     dockerCommand: /entrypoint-web.sh
-    plan: starter
+    plan: free                         # <--- Cambiado de 'starter' a 'free' (¡Gratis!)
     healthCheckPath: /
     preDeployCommand: php artisan migrate --force
     envVars:
       - fromGroup: barrio-env
 
-  - type: worker
-    name: barrio-worker
-    runtime: docker
-    dockerfilePath: ./docker/render/Dockerfile
-    dockerContext: .
-    dockerCommand: /entrypoint-worker.sh
-    plan: starter
-    envVars:
-      - fromGroup: barrio-env
+  # El servicio worker se comenta porque Render no ofrece workers en su plan gratuito.
+  # - type: worker
+  #   name: barrio-worker
+  #   runtime: docker
+  #   dockerfilePath: ./docker/render/Dockerfile
+  #   dockerContext: .
+  #   dockerCommand: /entrypoint-worker.sh
+  #   plan: starter
+  #   envVars:
+  #     - fromGroup: barrio-env
 
 envVarGroups:
   - name: barrio-env
@@ -61,8 +62,10 @@ envVarGroups:
         value: require       # Aiven exige SSL
 
       # === Sin Redis: colas y caché van sobre la misma base de datos ===
+      # NOTA: Para pruebas sin worker, puedes cambiar database por sync si quieres
+      # que los correos/tareas se procesen inmediatamente sin un worker de fondo.
       - key: QUEUE_CONNECTION
-        value: database
+        value: sync          # <--- Cambiado temporalmente a 'sync' para procesar sin worker
       - key: CACHE_STORE
         value: database
       - key: SESSION_DRIVER
