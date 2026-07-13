@@ -24,9 +24,7 @@ class ActividadRechazada extends Notification
     {
         return (new MailMessage)
             ->subject('Tu actividad fue rechazada')
-            ->line("\"{$this->actividad->nombre}\" fue rechazada por el Consejo de Obispado.")
-            ->line('Motivo: ' . $this->motivo)
-            ->action('Ver actividad', route('actividades.show', $this->actividad));
+            ->view('emails.actividad-rechazada', ['actividad' => $this->actividad, 'motivo' => $this->motivo]);
     }
 
     public function toArray(object $notifiable): array

@@ -68,10 +68,10 @@
         }
 
         .fc-event.evt-especial {
-            background: #26282B0d !important;
-            color: #26282B !important;
-            border: 1px dashed #26282B40 !important;
-            font-style: italic;
+            background: #2B3A4A !important;
+            color: #ffffff !important;
+            border: none !important;
+            font-weight: 500;
         }
 
         .fc-daygrid-event-dot {
@@ -97,29 +97,32 @@
             <div class="bg-white border border-line rounded-xl overflow-hidden">
                 <div class="flex items-center justify-between px-5 py-4 border-b border-line flex-wrap gap-3">
                     <div class="flex items-center gap-3">
-                        <button id="btn-prev"
+                        <button @click="calendar.prev()"
                             class="w-8 h-8 rounded-lg border border-line hover:bg-paper flex items-center justify-center transition-colors">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </button>
-                        <button id="btn-next"
+                        <button @click="calendar.next()"
                             class="w-8 h-8 rounded-lg border border-line hover:bg-paper flex items-center justify-center transition-colors">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </button>
                         <h2 id="cal-title" class="font-display font-semibold text-lg capitalize"></h2>
-                        <button id="btn-today"
+                        <button @click="calendar.today()"
                             class="text-xs px-3 py-1.5 rounded-lg border border-line hover:bg-paper transition-colors font-medium">Hoy</button>
                     </div>
                     <div class="flex items-center gap-1 bg-paper border border-line rounded-lg p-1">
-                        <button id="view-month"
-                            class="px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-white transition-colors">Mes</button>
-                        <button id="view-week"
-                            class="px-3 py-1.5 rounded-md text-xs font-medium text-ink/50 hover:text-ink transition-colors">Semana</button>
-                        <button id="view-list"
-                            class="px-3 py-1.5 rounded-md text-xs font-medium text-ink/50 hover:text-ink transition-colors">Lista</button>
+                        <button @click="cambiarVista('dayGridMonth')"
+                            :class="vista==='dayGridMonth' ? 'bg-primary text-white' : 'text-ink/50 hover:text-ink'"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors">Mes</button>
+                        <button @click="cambiarVista('timeGridWeek')"
+                            :class="vista==='timeGridWeek' ? 'bg-primary text-white' : 'text-ink/50 hover:text-ink'"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors">Semana</button>
+                        <button @click="cambiarVista('listMonth')"
+                            :class="vista==='listMonth' ? 'bg-primary text-white' : 'text-ink/50 hover:text-ink'"
+                            class="px-3 py-1.5 rounded-md text-xs font-medium transition-colors">Lista</button>
                     </div>
                 </div>
                 <div class="p-3">
@@ -147,13 +150,13 @@
                     <h3 class="font-display font-semibold text-sm mb-3.5">Estado</h3>
                     <div class="space-y-2.5 text-sm text-ink/75">
                         <div class="flex items-center gap-2.5"><span
-                                class="w-6 h-3 rounded bg-primary shrink-0"></span>Aprobada</div>
+                                class="w-6 h-3 rounded bg-ink/40 shrink-0"></span>Aprobada <span class="text-ink/35">(color
+                                de la organización)</span></div>
                         <div class="flex items-center gap-2.5"><span class="w-6 h-3 rounded shrink-0"
-                                style="background:repeating-linear-gradient(135deg,#2B3A4A,#2B3A4A 3px,#5c7186 3px,#5c7186 6px)"></span>Pendiente
+                                style="background:repeating-linear-gradient(135deg,#26282B66,#26282B66 3px,#26282B26 3px,#26282B26 6px)"></span>Pendiente
                         </div>
                         <div class="flex items-center gap-2.5"><span
-                                class="w-6 h-3 rounded border border-dashed border-ink/40 bg-ink/5 shrink-0"></span>Fecha
-                            especial</div>
+                                class="w-6 h-3 rounded bg-primary shrink-0"></span>Fecha especial</div>
                     </div>
                 </div>
 
@@ -257,6 +260,7 @@
         function calendarioPagina() {
             return {
                 calendar: null,
+                vista: 'dayGridMonth',
                 modalResumen: null,
                 modalRechazar: false,
                 cargandoResumen: false,
@@ -288,23 +292,6 @@
                     });
                     this.calendar.render();
 
-                    document.getElementById('btn-prev').addEventListener('click', () => this.calendar.prev());
-                    document.getElementById('btn-next').addEventListener('click', () => this.calendar.next());
-                    document.getElementById('btn-today').addEventListener('click', () => this.calendar.today());
-
-                    const viewButtons = { 'view-month': 'dayGridMonth', 'view-week': 'timeGridWeek', 'view-list': 'listMonth' };
-                    Object.entries(viewButtons).forEach(([id, view]) => {
-                        document.getElementById(id).addEventListener('click', () => {
-                            this.calendar.changeView(view);
-                            Object.keys(viewButtons).forEach((btnId) => {
-                                const btn = document.getElementById(btnId);
-                                btn.classList.toggle('bg-primary', btnId === id);
-                                btn.classList.toggle('text-white', btnId === id);
-                                btn.classList.toggle('text-ink/50', btnId !== id);
-                            });
-                        });
-                    });
-
                     document.querySelectorAll('.filtro-org').forEach((checkbox) => {
                         checkbox.addEventListener('change', () => {
                             const orgId = parseInt(checkbox.dataset.org, 10);
@@ -325,6 +312,10 @@
                         .then((r) => r.json())
                         .then((data) => { this.modalResumen = data; })
                         .finally(() => { this.cargandoResumen = false; });
+                },
+                cambiarVista(vista) {
+                    this.vista = vista;
+                    this.calendar.changeView(vista);
                 },
             };
         }

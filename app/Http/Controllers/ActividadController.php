@@ -9,6 +9,7 @@ use App\Http\Requests\Actividad\UpdateActividadRequest;
 use App\Models\Actividad;
 use App\Models\CategoriaPresupuesto;
 use App\Models\Organizacion;
+use App\Models\PresupuestoOrganizacion;
 use App\Models\Recurso;
 use App\Models\Trimestre;
 use App\Repositories\ActividadRepository;
@@ -52,13 +53,20 @@ class ActividadController extends Controller
     {
         $this->authorize('create', Actividad::class);
 
+        $trimestreActivo = Trimestre::obtenerActivo();
+
         return view('actividades.create', [
             'fechaPrecargada' => $request->query('fecha'),
             'categorias' => CategoriaPresupuesto::activas()->orderBy('nombre')->get(),
             'recursos' => Recurso::activos()->orderBy('nombre')->get(),
             'organizaciones' => $request->user()->organizacion_id
                 ? null
-                : \App\Models\Organizacion::activas()->orderBy('nombre')->get(),
+                : Organizacion::activas()->orderBy('nombre')->get(),
+            'presupuestoOrg' => ($trimestreActivo && $request->user()->organizacion_id)
+                ? PresupuestoOrganizacion::where('organizacion_id', $request->user()->organizacion_id)
+                    ->where('trimestre_id', $trimestreActivo->id)
+                    ->first()
+                : null,
         ]);
     }
 
@@ -75,7 +83,7 @@ class ActividadController extends Controller
     {
         $this->authorize('view', $actividad);
 
-        $actividad->load(['organizacion', 'estadoActual', 'presupuestoItems.categoria', 'participantes', 'recursos', 'comentarios.usuario', 'historialEstados.usuario']);
+        $actividad->load(['organizacion', 'estadoActual', 'presupuestoItems.categoria', 'participantes', 'recursos', 'comentarios.usuario', 'historialEstados.usuario', 'historialEstados.estadoAnterior', 'historialEstados.estadoNuevo']);
 
         return view('actividades.show', compact('actividad'));
     }
@@ -84,7 +92,7 @@ class ActividadController extends Controller
     {
         $this->authorize('update', $actividad);
 
-        $actividad->load('participantes', 'presupuestoItems', 'recursos');
+        $actividad->load('participantes', 'presupuestoItems', 'recursos', 'organizacion');
 
         return view('actividades.edit', [
             'actividad' => $actividad,
@@ -93,6 +101,9 @@ class ActividadController extends Controller
             'organizaciones' => auth()->user()->organizacion_id
                 ? null
                 : Organizacion::activas()->orderBy('nombre')->get(),
+            'presupuestoOrg' => PresupuestoOrganizacion::where('organizacion_id', $actividad->organizacion_id)
+                ->where('trimestre_id', $actividad->trimestre_id)
+                ->first(),
         ]);
     }
 
@@ -147,6 +158,17 @@ class ActividadController extends Controller
         return redirect()
             ->route('actividades.show', $actividad)
             ->with('exito', 'Actividad cancelada.');
+    }
+
+    public function realizar(Actividad $actividad): RedirectResponse
+    {
+        $this->authorize('marcarRealizada', $actividad);
+
+        $this->actividadService->marcarRealizada($actividad, auth()->user());
+
+        return redirect()
+            ->route('actividades.show', $actividad)
+            ->with('exito', 'Actividad marcada como Realizada.');
     }
 
     public function comentar(Request $request, Actividad $actividad): RedirectResponse

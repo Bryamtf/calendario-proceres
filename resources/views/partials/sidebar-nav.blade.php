@@ -61,6 +61,17 @@
     </a>
 @endcan
 
+@can('create', \App\Models\FechaEspecial::class)
+    <a href="{{ route('fechas-especiales.index') }}"
+        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors {{ request()->routeIs('fechas-especiales.*') ? 'bg-white/10 text-white font-medium' : 'text-white/70 hover:bg-white/5 hover:text-white' }}">
+        <svg class="w-[18px] h-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3.5" y="5" width="17" height="15" rx="2" stroke-dasharray="2 2" />
+            <path d="M3.5 9.5h17M8 3v3M16 3v3" stroke-linecap="round" />
+        </svg>
+        <span x-show="sidebarOpen" x-transition>Fechas Especiales</span>
+    </a>
+@endcan
+
 @if(auth()->user()->rolEnum() === \App\Enums\RolUsuario::Administrador)
     <p x-show="sidebarOpen" class="px-3 mt-5 mb-2 text-[11px] uppercase tracking-wider text-white/40 font-medium">
         Administración</p>

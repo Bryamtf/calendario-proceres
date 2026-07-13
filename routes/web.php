@@ -9,6 +9,10 @@ use App\Http\Controllers\OrganizacionController;
 use App\Http\Controllers\ReporteController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\PresupuestoController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\NotificacionController;
+use App\Http\Controllers\FechaEspecialController;
+
 use Illuminate\Support\Facades\Route;
 
 
@@ -16,9 +20,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -40,6 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/actividades/{actividad}/resumen', [ActividadController::class, 'resumen'])->name('actividades.resumen');
     Route::get('/actividades/{actividad}/editar', [ActividadController::class, 'edit'])->name('actividades.edit');
     Route::put('/actividades/{actividad}', [ActividadController::class, 'update'])->name('actividades.update');
+    Route::post('/actividades/{actividad}/realizar', [ActividadController::class, 'realizar'])->name('actividades.realizar');
 
     Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
     Route::get('/usuarios/crear', [UserController::class, 'create'])->name('usuarios.create');
@@ -72,6 +75,17 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/presupuesto', [PresupuestoController::class, 'index'])->name('presupuesto.index');
     Route::put('/presupuesto/{organizacion}', [PresupuestoController::class, 'update'])->name('presupuesto.update');
+
+    Route::get('/notificaciones', [NotificacionController::class, 'index'])->name('notificaciones.index');
+    Route::post('/notificaciones/{id}/leer', [NotificacionController::class, 'leer'])->name('notificaciones.leer');
+    Route::post('/notificaciones/marcar-todas', [NotificacionController::class, 'marcarTodas'])->name('notificaciones.marcarTodas');
+
+    Route::get('/fechas-especiales', [FechaEspecialController::class, 'index'])->name('fechas-especiales.index');
+    Route::get('/fechas-especiales/crear', [FechaEspecialController::class, 'create'])->name('fechas-especiales.create');
+    Route::post('/fechas-especiales', [FechaEspecialController::class, 'store'])->name('fechas-especiales.store');
+    Route::get('/fechas-especiales/{fechaEspecial}/editar', [FechaEspecialController::class, 'edit'])->name('fechas-especiales.edit');
+    Route::put('/fechas-especiales/{fechaEspecial}', [FechaEspecialController::class, 'update'])->name('fechas-especiales.update');
+    Route::delete('/fechas-especiales/{fechaEspecial}', [FechaEspecialController::class, 'destroy'])->name('fechas-especiales.destroy');
 
 });
 

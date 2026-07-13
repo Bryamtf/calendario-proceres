@@ -24,9 +24,7 @@ class ActividadAprobada extends Notification
     {
         return (new MailMessage)
             ->subject('Tu actividad fue aprobada')
-            ->line("\"{$this->actividad->nombre}\" fue aprobada por el Consejo de Obispado.")
-            ->line('Fecha: ' . $this->actividad->fecha->format('d/m/Y'))
-            ->action('Ver actividad', route('actividades.show', $this->actividad));
+            ->view('emails.actividad-aprobada', ['actividad' => $this->actividad]);
     }
 
     public function toArray(object $notifiable): array

@@ -37,6 +37,7 @@ class UserController extends Controller
         $datos = $request->validated();
         $datos['password'] = Hash::make($datos['password']);
         $datos['activo'] = $datos['activo'] ?? true;
+        $datos['email_verified_at'] = now(); // creado por Admin = cuenta de confianza, sin flujo de verificación por correo
 
         // organizacion_id solo tiene sentido si el rol es Presidencia (Fase 2)
         $rol = Role::find($datos['role_id']);
@@ -80,7 +81,7 @@ class UserController extends Controller
         return redirect()->route('usuarios.index')->with('exito', 'Usuario actualizado.');
     }
 
-    /** Nunca se elimina — solo se desactiva. */
+    /** Nunca se elimina (Fase 1: conservar historial de quién creó/aprobó qué) — solo se desactiva. */
     public function toggleActivo(User $usuario): RedirectResponse
     {
         $this->authorize('update', $usuario);

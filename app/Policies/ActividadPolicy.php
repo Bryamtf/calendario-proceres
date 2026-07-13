@@ -88,4 +88,10 @@ class ActividadPolicy
 
         return $user->rolEnum()->puedeCancelarActividadAjena();
     }
+
+    /** Marcar como Realizada: misma regla de permiso que cancelar (quien puede dar de baja, puede confirmar que sí ocurrió). */
+    public function marcarRealizada(User $user, Actividad $actividad): bool
+    {
+        return $this->cancelar($user, $actividad);
+    }
 }

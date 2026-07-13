@@ -24,9 +24,7 @@ class ActividadPendienteAprobacion extends Notification
     {
         return (new MailMessage)
             ->subject('Nueva actividad pendiente de revisión')
-            ->line("{$this->actividad->organizacion->nombre} propuso: {$this->actividad->nombre}")
-            ->line('Fecha: ' . $this->actividad->fecha->format('d/m/Y'))
-            ->action('Revisar actividad', route('actividades.show', $this->actividad));
+            ->view('emails.actividad-pendiente', ['actividad' => $this->actividad]);
     }
 
     public function toArray(object $notifiable): array
