@@ -4,6 +4,9 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+      args:
+        - USER_ID=${DOCKER_UID:-1000}
+        - GROUP_ID=${DOCKER_GID:-1000}
     container_name: barrio_app
     restart: unless-stopped
     working_dir: /var/www/html
@@ -68,6 +71,9 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+      args:
+        - USER_ID=${DOCKER_UID:-1000}
+        - GROUP_ID=${DOCKER_GID:-1000}
     container_name: barrio_queue
     restart: unless-stopped
     working_dir: /var/www/html
@@ -91,6 +97,9 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+      args:
+        - USER_ID=${DOCKER_UID:-1000}
+        - GROUP_ID=${DOCKER_GID:-1000}
     container_name: barrio_scheduler
     restart: unless-stopped
     working_dir: /var/www/html
@@ -107,7 +116,7 @@ services:
       - db
     networks:
       - barrio_network
-
+  
 networks:
   barrio_network:
     driver: bridge

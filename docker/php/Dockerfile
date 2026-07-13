@@ -30,6 +30,11 @@ RUN docker-php-ext-install \
 # Extensión Redis (via PECL, no viene con docker-php-ext-install)
 RUN pecl install redis && docker-php-ext-enable redis
 
+# Node.js 20 LTS — necesario para compilar assets de Breeze (npm install / npm run build)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
