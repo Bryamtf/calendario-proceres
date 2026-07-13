@@ -1,0 +1,81 @@
+# Blueprint de Render — https://render.com/docs/blueprint-spec
+# Sube este archivo a la raíz del repo. En el dashboard de Render: New > Blueprint,
+# conecta tu repo, y Render arma los 2 servicios automáticamente.
+#
+# La base de datos vive en Aiven (externa a Render), así que sus credenciales
+# se cargan a mano como secretos en el dashboard, no las genera Render.
+
+services:
+  - type: web
+    name: barrio-web
+    runtime: docker
+    dockerfilePath: ./docker/render/Dockerfile
+    dockerContext: .
+    dockerCommand: /entrypoint-web.sh
+    plan: starter
+    healthCheckPath: /
+    preDeployCommand: php artisan migrate --force
+    envVars:
+      - fromGroup: barrio-env
+
+  - type: worker
+    name: barrio-worker
+    runtime: docker
+    dockerfilePath: ./docker/render/Dockerfile
+    dockerContext: .
+    dockerCommand: /entrypoint-worker.sh
+    plan: starter
+    envVars:
+      - fromGroup: barrio-env
+
+envVarGroups:
+  - name: barrio-env
+    envVars:
+      - key: APP_NAME
+        value: "Barrio Los Próceres"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: base64:iGZ0/1JVLqLal70IWSgUu8mKNDhJtGm3F4iGTYxhn/Q=
+      - key: APP_URL
+        sync: false          # ej. https://barrio-web.onrender.com (o tu dominio propio)
+      - key: LOG_CHANNEL
+        value: stderr        # Render captura stdout/stderr como logs, no tiene sentido escribir a archivo
+
+      # === Base de datos (Aiven, externa) ===
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SSLMODE
+        value: require       # Aiven exige SSL
+
+      # === Sin Redis: colas y caché van sobre la misma base de datos ===
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: SESSION_DRIVER
+        value: database
+
+      # === Correo (Resend) ===
+      - key: MAIL_MAILER
+        value: resend
+      - key: RESEND_KEY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM_ADDRESS
+        value: "notificaciones@danisys.lat"
+      - key: MAIL_FROM_NAME
+        value: "${APP_NAME}"
