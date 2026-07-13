@@ -12,9 +12,9 @@ services:
     dockerfilePath: ./docker/render/Dockerfile
     dockerContext: .
     dockerCommand: /entrypoint-web.sh
-    plan: free                         # <--- Cambiado de 'starter' a 'free' (¡Gratis!)
+    plan: free
     healthCheckPath: /
-    preDeployCommand: php artisan migrate --force
+    # preDeployCommand: php artisan migrate --force  # <--- Comentado porque no es compatible con el plan gratuito
     envVars:
       - fromGroup: barrio-env
 
