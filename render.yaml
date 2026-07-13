@@ -38,7 +38,7 @@ envVarGroups:
       - key: APP_DEBUG
         value: "false"
       - key: APP_KEY
-        sync: base64:iGZ0/1JVLqLal70IWSgUu8mKNDhJtGm3F4iGTYxhn/Q=
+        sync: false
       - key: APP_URL
         sync: false          # ej. https://barrio-web.onrender.com (o tu dominio propio)
       - key: LOG_CHANNEL
