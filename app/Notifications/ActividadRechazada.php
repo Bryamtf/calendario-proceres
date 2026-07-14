@@ -23,7 +23,7 @@ class ActividadRechazada extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Tu actividad fue rechazada')
+            ->subject('Rechazada: ' . $this->actividad->nombre)
             ->view('emails.actividad-rechazada', ['actividad' => $this->actividad, 'motivo' => $this->motivo]);
     }
 

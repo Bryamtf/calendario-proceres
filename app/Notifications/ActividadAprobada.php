@@ -23,7 +23,7 @@ class ActividadAprobada extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Tu actividad fue aprobada')
+            ->subject('Aprobada: ' . $this->actividad->nombre)
             ->view('emails.actividad-aprobada', ['actividad' => $this->actividad]);
     }
 

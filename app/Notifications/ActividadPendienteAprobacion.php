@@ -23,7 +23,7 @@ class ActividadPendienteAprobacion extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Nueva actividad pendiente de revisión')
+            ->subject('Pendiente de revisión: ' . $this->actividad->nombre)
             ->view('emails.actividad-pendiente', ['actividad' => $this->actividad]);
     }
 
