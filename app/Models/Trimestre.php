@@ -40,12 +40,19 @@ class Trimestre extends Model
     /** Días transcurridos / total, para el indicador de avance del sidebar (Fase 4). */
     public function diaActual(): int
     {
-        return max(1, Carbon::today()->diffInDays($this->fecha_inicio) + 1);
+        // Se calcula por timestamps en vez de diffInDays() directo: en Carbon 3 (Laravel 11+)
+        // diffInDays() dejó de devolver siempre valor absoluto, y el signo según el orden
+        // de los argumentos causaba que esto diera negativo (y por ende "día 1" siempre).
+        $dias = (int) floor((Carbon::today()->timestamp - $this->fecha_inicio->copy()->startOfDay()->timestamp) / 86400);
+
+        return max(1, $dias + 1);
     }
 
     public function totalDias(): int
     {
-        return Carbon::parse($this->fecha_inicio)->diffInDays(Carbon::parse($this->fecha_fin)) + 1;
+        $dias = (int) floor(($this->fecha_fin->copy()->startOfDay()->timestamp - $this->fecha_inicio->copy()->startOfDay()->timestamp) / 86400);
+
+        return $dias + 1;
     }
 
     /** Fecha límite para el cierre automático (Fase 3/4: días de gracia configurables). */
@@ -53,6 +60,6 @@ class Trimestre extends Model
     {
         $diasGracia = ConfiguracionSistema::obtener()->dias_gracia_cierre_trimestre;
 
-        return Carbon::parse($this->fecha_fin)->addDays($diasGracia);
+        return $this->fecha_fin->copy()->addDays($diasGracia);
     }
 }
