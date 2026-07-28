@@ -57,6 +57,31 @@
                         <button class="bg-primary text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-primary-light transition-colors">Guardar cambios</button>
                     </div>
                 </form>
+
+                {{-- Link público de actividades --}}
+                <div x-data="{ copiado: false }" class="bg-white border border-line rounded-xl p-6 mt-6">
+                    <h2 class="font-display font-semibold text-lg mb-1">Link público</h2>
+                    <p class="text-sm text-ink/50 mb-4">Para que los miembros del barrio vean las próximas actividades, sin necesidad de iniciar sesión.</p>
+
+                    @if($linkPublico)
+                        <div class="flex gap-2 mb-3">
+                            <input type="text" readonly value="{{ $linkPublico }}" class="form-input font-mono text-xs bg-paper" x-ref="linkInput" onclick="this.select()">
+                            <button type="button" @click="navigator.clipboard.writeText('{{ $linkPublico }}'); copiado = true; setTimeout(() => copiado = false, 2000)" class="shrink-0 border border-line px-3 rounded-lg hover:bg-paper transition-colors text-xs font-medium">
+                                <span x-show="!copiado">Copiar</span>
+                                <span x-show="copiado" x-cloak class="text-sage">¡Copiado!</span>
+                            </button>
+                        </div>
+                    @else
+                        <p class="text-xs text-ink/40 mb-3">Aún no se ha generado — se crea automáticamente al regenerar por primera vez.</p>
+                    @endif
+
+                    <form method="POST" action="{{ route('configuracion.regenerarTokenPublico') }}" onsubmit="return confirm('El link actual dejará de funcionar. ¿Continuar?');">
+                        @csrf
+                        <button class="text-xs font-medium text-brick hover:text-brick/80 transition-colors">
+                            {{ $linkPublico ? 'Regenerar link (invalida el actual)' : 'Generar link' }}
+                        </button>
+                    </form>
+                </div>
             </div>
 
             {{-- ============ CATÁLOGOS ============ --}}

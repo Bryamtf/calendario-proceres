@@ -168,7 +168,8 @@
                     </div>
 
                     <div class="h-8 w-px bg-line hidden sm:block"></div>
-                    <div class="flex items-center gap-2.5">
+                    <a href="{{ route('profile.edit') }}"
+                        class="flex items-center gap-2.5 hover:opacity-75 transition-opacity">
                         <div
                             class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center font-display font-semibold text-primary text-sm">
                             {{ collect(explode(' ', auth()->user()->name))->map(fn($p) => mb_substr($p, 0, 1))->take(2)->implode('') }}
@@ -177,7 +178,7 @@
                             <p class="text-sm font-medium leading-tight text-ink">{{ auth()->user()->name }}</p>
                             <p class="text-[11px] text-ink/45 leading-tight">{{ auth()->user()->role->nombre }}</p>
                         </div>
-                    </div>
+                    </a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button class="text-xs text-ink/40 hover:text-brick transition-colors">Salir</button>
