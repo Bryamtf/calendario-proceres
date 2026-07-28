@@ -171,6 +171,30 @@ class ActividadController extends Controller
             ->with('exito', 'Actividad marcada como Realizada.');
     }
 
+    /** PDF oficial de Solicitud de Gastos (Fase 12) — solo disponible con desglose por rubro. */
+    public function descargarSolicitudPdf(Request $request, Actividad $actividad, \App\Services\SolicitudGastosPdfService $pdfService)
+    {
+        $this->authorize('descargarPdf', $actividad);
+
+        abort_unless($actividad->solicita_presupuesto && !$actividad->esPresupuestoAproximado(), 422, 'Esta actividad no tiene un desglose por rubro.');
+
+        $datos = $request->validate([
+            'nombre_solicitante' => ['nullable', 'string', 'max:150'],
+            'nombre_cobrador' => ['nullable', 'string', 'max:150'],
+        ]);
+
+        $actividad->update($datos);
+        $actividad->load('presupuestoItems.categoria', 'organizacion');
+
+        $contenido = $pdfService->generar($actividad);
+        $nombreArchivo = 'solicitud-gastos-' . str($actividad->nombre)->slug() . '.pdf';
+
+        return response($contenido, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $nombreArchivo . '"',
+        ]);
+    }
+
     public function comentar(Request $request, Actividad $actividad): RedirectResponse
     {
         $this->authorize('comentar', $actividad);
@@ -197,7 +221,7 @@ class ActividadController extends Controller
             'nombre' => $actividad->nombre,
             'organizacion' => $actividad->organizacion->nombre,
             'color' => $actividad->organizacion->color,
-            'fecha' => $actividad->fecha->format('d M Y'),
+            'fecha' => \Carbon\Carbon::parse($actividad->fecha)->format('d M Y'),
             'horaInicio' => \Carbon\Carbon::parse($actividad->hora_inicio)->format('g:i a'),
             'horaFin' => \Carbon\Carbon::parse($actividad->hora_fin)->format('g:i a'),
             'lugar' => $actividad->lugar,

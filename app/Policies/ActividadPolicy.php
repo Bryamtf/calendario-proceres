@@ -94,4 +94,17 @@ class ActividadPolicy
     {
         return $this->cancelar($user, $actividad);
     }
+
+    /**
+     * Descargar el PDF oficial de "Solicitud de Gastos" (Fase 12): Presidencia dueña,
+     * o cualquier rol con visibilidad global de presupuestos (Fase 1/4).
+     */
+    public function descargarPdf(User $user, Actividad $actividad): bool
+    {
+        if ($user->rolEnum() === RolUsuario::Presidencia) {
+            return $user->organizacion_id === $actividad->organizacion_id;
+        }
+
+        return $user->rolEnum()->veTodosLosPresupuestos();
+    }
 }

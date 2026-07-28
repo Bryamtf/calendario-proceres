@@ -14,25 +14,12 @@ class Actividad extends Model
     protected $table = 'actividades';
 
     protected $fillable = [
-        'organizacion_id',
-        'trimestre_id',
-        'nombre',
-        'fecha',
-        'hora_inicio',
-        'hora_fin',
-        'lugar',
-        'objetivo',
-        'descripcion',
-        'asistencia_esperada',
-        'miembros_nuevos',
-        'amigos_ensenanza',
-        'miembros_menos_activos',
-        'solicita_presupuesto',
-        'estado_actual_id',
-        'actividad_origen_id',
-        'creado_por',
-        'aprobado_por',
-        'fecha_aprobacion',
+        'organizacion_id', 'trimestre_id', 'nombre', 'fecha', 'hora_inicio', 'hora_fin',
+        'lugar', 'objetivo', 'descripcion',
+        'asistencia_esperada', 'miembros_nuevos', 'amigos_ensenanza', 'miembros_menos_activos',
+        'solicita_presupuesto', 'estado_actual_id', 'actividad_origen_id',
+        'creado_por', 'aprobado_por', 'fecha_aprobacion',
+        'nombre_solicitante', 'nombre_cobrador',
     ];
 
     protected $casts = [
@@ -109,7 +96,7 @@ class Actividad extends Model
 
     public function scopeConEstado(Builder $query, EstadoActividadEnum $estado): Builder
     {
-        return $query->whereHas('estadoActual', fn(Builder $q) => $q->where('nombre', $estado->value));
+        return $query->whereHas('estadoActual', fn (Builder $q) => $q->where('nombre', $estado->value));
     }
 
     public function scopePendientes(Builder $query): Builder
@@ -119,7 +106,7 @@ class Actividad extends Model
 
     public function scopeDelTrimestreActivo(Builder $query): Builder
     {
-        return $query->whereHas('trimestre', fn(Builder $q) => $q->where('estado', 'activo'));
+        return $query->whereHas('trimestre', fn (Builder $q) => $q->where('estado', 'activo'));
     }
 
     // ===== Helpers de presupuesto (modo híbrido: aproximado vs desglose) =====
