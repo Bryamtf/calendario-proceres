@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PublicoController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ActividadController;
 use App\Http\Controllers\CalendarioController;
@@ -25,7 +26,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['au
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
     Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario.index');
     Route::get('/calendario/eventos', [CalendarioController::class, 'eventos'])->name('calendario.eventos');
 
@@ -43,6 +44,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/actividades/{actividad}/editar', [ActividadController::class, 'edit'])->name('actividades.edit');
     Route::put('/actividades/{actividad}', [ActividadController::class, 'update'])->name('actividades.update');
     Route::post('/actividades/{actividad}/realizar', [ActividadController::class, 'realizar'])->name('actividades.realizar');
+    Route::post('/actividades/{actividad}/solicitud-pdf', [ActividadController::class, 'descargarSolicitudPdf'])->name('actividades.solicitudPdf');
+
 
     Route::get('/usuarios', [UserController::class, 'index'])->name('usuarios.index');
     Route::get('/usuarios/crear', [UserController::class, 'create'])->name('usuarios.create');
@@ -72,6 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/configuracion', [ConfiguracionController::class, 'update'])->name('configuracion.update');
     Route::post('/configuracion/catalogos/{tipo}', [ConfiguracionController::class, 'storeCatalogo'])->name('configuracion.catalogos.store');
     Route::patch('/configuracion/catalogos/{tipo}/{id}/toggle', [ConfiguracionController::class, 'toggleCatalogoItem'])->name('configuracion.catalogos.toggle');
+    Route::post('/configuracion/link-publico/regenerar', [ConfiguracionController::class, 'regenerarTokenPublico'])->name('configuracion.regenerarTokenPublico');
 
     Route::get('/presupuesto', [PresupuestoController::class, 'index'])->name('presupuesto.index');
     Route::put('/presupuesto/{organizacion}', [PresupuestoController::class, 'update'])->name('presupuesto.update');
@@ -88,5 +92,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/fechas-especiales/{fechaEspecial}', [FechaEspecialController::class, 'destroy'])->name('fechas-especiales.destroy');
 
 });
+
+Route::get('/publico/{token}', [PublicoController::class, 'index'])
+    ->middleware('throttle:60,1')
+    ->name('publico.index');
 
 require __DIR__.'/auth.php';

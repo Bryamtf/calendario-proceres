@@ -22,6 +22,7 @@ document.addEventListener("submit", function (event) {
     });
 
     const overlay = document.createElement("div");
+    overlay.id = "carga-global-overlay";
     overlay.className =
         "fixed inset-0 bg-black/30 z-[200] flex items-center justify-center";
     overlay.innerHTML = `
@@ -30,7 +31,16 @@ document.addEventListener("submit", function (event) {
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
             </svg>
-            <span class="text-sm font-medium text-ink">Guardando...</span>
+            <span class="text-sm font-medium text-ink">Procesando...</span>
         </div>`;
     document.body.appendChild(overlay);
 });
+
+function cerrarCargaGlobal(form) {
+    document.getElementById("carga-global-overlay")?.remove();
+    form.querySelectorAll('button:not([type="button"])').forEach((btn) => {
+        btn.disabled = false;
+        btn.classList.remove("opacity-60", "cursor-not-allowed");
+    });
+}
+window.cerrarCargaGlobal = cerrarCargaGlobal;
