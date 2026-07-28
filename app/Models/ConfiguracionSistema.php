@@ -15,4 +15,27 @@ class ConfiguracionSistema extends Model
     {
         return static::firstOrFail();
     }
+
+    /** Genera el token la primera vez que se necesita (no existe hasta el primer uso). */
+    public static function obtenerTokenPublico(): string
+    {
+        $config = static::obtener();
+
+        if (! $config->link_publico_token) {
+            $config->link_publico_token = \Illuminate\Support\Str::random(40);
+            $config->save();
+        }
+
+        return $config->link_publico_token;
+    }
+
+    /** Invalida el link anterior — cualquiera que lo tuviera guardado deja de funcionar. */
+    public static function regenerarTokenPublico(): string
+    {
+        $config = static::obtener();
+        $config->link_publico_token = \Illuminate\Support\Str::random(40);
+        $config->save();
+
+        return $config->link_publico_token;
+    }
 }

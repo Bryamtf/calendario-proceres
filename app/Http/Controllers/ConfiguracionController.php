@@ -29,6 +29,9 @@ class ConfiguracionController extends Controller
             'recursos' => Recurso::orderBy('nombre')->get(),
             'tiposFecha' => TipoFechaEspecial::orderBy('nombre')->get(),
             'categorias' => CategoriaPresupuesto::orderBy('nombre')->get(),
+            'linkPublico' => ConfiguracionSistema::obtener()->link_publico_token
+                ? route('publico.index', ConfiguracionSistema::obtener()->link_publico_token)
+                : null,
         ]);
     }
 
@@ -92,5 +95,14 @@ class ConfiguracionController extends Controller
         abort_unless(array_key_exists($tipo, self::CATALOGOS), 404);
 
         return self::CATALOGOS[$tipo];
+    }
+
+    public function regenerarTokenPublico(): RedirectResponse
+    {
+        Gate::authorize('gestionar-configuracion');
+
+        ConfiguracionSistema::regenerarTokenPublico();
+
+        return back()->with('exito', 'Link público regenerado — el anterior ya no funciona.');
     }
 }
