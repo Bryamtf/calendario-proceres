@@ -17,8 +17,14 @@ use App\Http\Controllers\FechaEspecialController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::get('/', function () {
+/*Route::get('/', function () {
     return view('welcome');
+});*/
+
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
 });
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
@@ -26,13 +32,12 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['au
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    
+
     Route::get('/calendario', [CalendarioController::class, 'index'])->name('calendario.index');
     Route::get('/calendario/eventos', [CalendarioController::class, 'eventos'])->name('calendario.eventos');
 
     Route::get('/actividades/crear', [ActividadController::class, 'create'])->name('actividades.create');
     Route::get('/actividades', [ActividadController::class, 'index'])->name('actividades.index');
-    Route::get('/actividades/crear', [ActividadController::class, 'create'])->name('actividades.create');
     Route::post('/actividades', [ActividadController::class, 'store'])->name('actividades.store');
     Route::get('/actividades/{actividad}', [ActividadController::class, 'show'])->name('actividades.show');
     Route::post('/actividades/{actividad}/aprobar', [ActividadController::class, 'aprobar'])->name('actividades.aprobar');
