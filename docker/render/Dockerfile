@@ -1,4 +1,5 @@
-FROM php:8.4-fpm
+# Fijado a 8.4.27: corrige PHP2Shell (CVE-2026-109618 / CVE-2026-109619)
+FROM php:8.4.27-fpm
 
 # Dependencias del sistema + nginx + supervisor (Render exige un solo proceso por contenedor,
 # por eso combinamos nginx+php-fpm aquí, a diferencia del docker-compose local que los separa)

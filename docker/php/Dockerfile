@@ -1,4 +1,5 @@
-FROM php:8.4-fpm
+# Fijado a 8.4.27: corrige PHP2Shell (CVE-2026-109618 / CVE-2026-109619)
+FROM php:8.4.27-fpm
 
 # Dependencias del sistema
 RUN apt-get update && apt-get install -y \
@@ -48,6 +49,9 @@ COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
 
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Evita el aviso "dubious ownership" de git al correr composer dentro del contenedor
+RUN git config --global --add safe.directory /var/www/html
 
 EXPOSE 9000
 
